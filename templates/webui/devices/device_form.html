@@ -1,0 +1,69 @@
+{% extends 'webui/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Device Form{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="mb-4">{% if form.instance.pk %}Update Device{% else %}Create Device{% endif %}</h1>
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ field.label }}: {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <div class="row mb-3">
+                <div class="col-md-6">
+                   
+                    {{ form.group|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                   
+                    {{ form.name|as_crispy_field }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                   
+                    {{ form.ip|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                  
+                    {{ form.domain_name|as_crispy_field }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                   
+                    {{ form.status|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                   
+                    {{ form.remote_user|as_crispy_field }}
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                   
+                    {{ form.remote_password|as_crispy_field }}
+                </div>
+                <div class="col-md-6">
+                    
+                    {{ form.access_protocol|as_crispy_field }}
+                </div>
+            </div>
+            <button class="btn btn-success" type="submit">{% if form.instance.pk %}Update{% else %}Create{% endif %}</button>
+        </form>
+        <a class="btn btn-secondary mt-3" href="{% url 'device_list' %}">Back to Device List</a>
+    </div>
+{% endblock %}

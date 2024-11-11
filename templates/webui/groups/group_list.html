@@ -1,0 +1,74 @@
+{% extends 'webui/base.html' %}
+
+{% block title %}Group List{% endblock %}
+
+{% block content %}
+    <h1>Groups</h1>
+    <a class="btn btn-primary mb-3" href="{% url 'group_create' %}">Create New Group</a>
+
+    <!-- Filter and Sort Form -->
+    <form method="get" class="mb-3">
+        <div class="form-row">
+            <div class="col">
+                <select name="status" class="form-control">
+                    <option value="">All</option>
+                    <option value="active" {% if filter_status == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if filter_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            <div class="col">
+                <select name="sort_by" class="form-control">
+                    <option value="">Sort By</option>
+                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name</option>
+                    <option value="-name" {% if sort_by == '-name' %}selected{% endif %}>Name (desc)</option>
+                    <option value="status" {% if sort_by == 'status' %}selected{% endif %}>Status</option>
+                    <option value="-status" {% if sort_by == '-status' %}selected{% endif %}>Status (desc)</option>
+                </select>
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-secondary">Apply</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Name Filter Input -->
+    <input type="text" id="nameFilter" class="form-control mb-3" placeholder="Filter by name">
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="groupTable">
+            {% for group in groups %}
+                <tr>
+                    <td>{{ group.name }}</td>
+                    <td>{{ group.status|yesno:"Active,Inactive" }}</td>
+                    <td>
+                        <a class="btn btn-warning btn-sm" href="{% url 'group_update' group.pk %}">Edit</a>
+                        <a class="btn btn-danger btn-sm" href="{% url 'group_delete' group.pk %}">Delete</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- JavaScript for Client-side Filtering -->
+    <script>
+        document.getElementById('nameFilter').addEventListener('keyup', function() {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#groupTable tr');
+            rows.forEach(row => {
+                const name = row.querySelector('td:first-child').textContent.toLowerCase();
+                if (name.includes(filter)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+{% endblock %}

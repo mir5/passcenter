@@ -1,0 +1,13 @@
+{% extends 'webui/base.html' %}
+
+{% block title %}Delete Device{% endblock %}
+
+{% block content %}
+    <h1>Delete Device</h1>
+    <p>Are you sure you want to delete "{{ device.name }}"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">Delete</button>
+    </form>
+    <a class="btn btn-secondary mt-3" href="{% url 'device_list' %}">Cancel</a>
+{% endblock %}
