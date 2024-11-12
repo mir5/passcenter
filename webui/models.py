@@ -25,6 +25,7 @@ class Device(models.Model):
     group = models.ForeignKey(deviceGroup, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     ip = models.GenericIPAddressField()
+    port= models.IntegerField(default=22)
     domain_name = models.CharField(max_length=255, null=True, blank=True)
     status = models.BooleanField()
     remote_user = models.CharField(max_length=255)
@@ -41,10 +42,12 @@ class Device(models.Model):
 class DevicePassword(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    password = models.CharField(max_length=255)
+    username=models.CharField(max_length=255)
+    password = models.CharField(max_length=255,default="user")
     status = models.BooleanField()
     applytodevice=models.BooleanField(default=False)
     description = models.TextField(null=True)
+    
     valid_time = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

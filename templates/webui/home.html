@@ -29,7 +29,9 @@
                         <th>IP Address</th>
                         <th>Domain Name</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th>Request</th>
+                        <th>Password </th>
+                        <th> Logs </th>
                     </tr>
                 </thead>
                 <tbody id="devices-list">
@@ -42,9 +44,13 @@
                         <td>{{ device.status|yesno:"Active,Inactive" }}</td>
                         <td>
                             
-                            <a href="{% url 'create_device_password' device.id %}" class="btn btn-primary btn-sm">Action</a>
-                            <button class="btn btn-secondary btn-sm show-password-btn" data-device-id="{{ device.id }}">Show Password</button>
-                            <a href="{% url 'list_device_passwords' device.id %}" class="btn btn-info btn-sm">Show All </a>
+                            <a href="{% url 'create_device_password' device.id %}" class="btn btn-primary btn-sm">password</a>
+                        </td>
+                        <td>
+                            <a class="btn btn-secondary btn-sm show-password-btn" data-device-id="{{ device.id }}">Show </a>
+                        </td>
+                        <td>
+                            <a href="{% url 'list_device_passwords' device.id %}" class="btn btn-info btn-sm">Log </a>
                          
                         </td>
                     </tr>

@@ -20,15 +20,16 @@ class GroupForm(forms.ModelForm):
 class DeviceForm(forms.ModelForm):
     class Meta:
         model = Device 
-        fields = ['group', 'name', 'ip', 'domain_name', 'status', 'remote_user', 'remote_password', 'access_protocol'] 
+        fields = ['group', 'name', 'ip','port', 'domain_name', 'status', 'remote_user', 'remote_password', 'access_protocol'] 
         widgets = { 
                    'group': forms.Select(attrs={'class': 'form-control'}), 
                    'name': forms.TextInput(attrs={'class': 'form-control'}), 
-                   'ip': forms.TextInput(attrs={'class': 'form-control'}), 
+                   'ip': forms.TextInput(attrs={'class': 'form-control'}),
+                   'port': forms.NumberInput(attrs={'class': 'form-control'}),  
                    'domain_name': forms.TextInput(attrs={'class': 'form-control'}), 
                    'status': forms.CheckboxInput(attrs={'class': 'form-check-input'}), 
                    'remote_user': forms.TextInput(attrs={'class': 'form-control'}), 
-                   'remote_password': forms.PasswordInput(attrs={'class': 'form-control'}), 
+                   'remote_password': forms.PasswordInput(attrs={'class': 'form-control'},  render_value=True), 
                    'access_protocol': forms.Select(attrs={'class': 'form-control'}),
                 }
         def clean_ip(self):

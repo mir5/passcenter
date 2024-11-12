@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,user_passes_test
 from django.contrib.auth import logout
 from .models import deviceGroup,Device,DevicePassword
 from .forms import GroupForm
@@ -10,6 +10,8 @@ from .forms import CustomPasswordChangeForm
 import random
 import string
 
+def staff_user_required(user):
+    return user.is_authenticated and user.is_staff
 
 @login_required
 def home(request):
@@ -25,6 +27,7 @@ def home(request):
    
     return render(request, 'webui/home.html', {'groups': groups, 'devices': devices})
 @login_required
+@user_passes_test(staff_user_required)
 def group_list(request):
     groups = deviceGroup.objects.all()
     filter_status = request.GET.get('status')
@@ -35,6 +38,7 @@ def group_list(request):
         groups = groups.order_by(sort_by)
     return render(request, 'webui/groups/group_list.html', {'groups': groups})
 @login_required
+@user_passes_test(staff_user_required)
 def group_create(request):
     if request.method == 'POST':
         form = GroupForm(request.POST)
@@ -45,6 +49,7 @@ def group_create(request):
         form = GroupForm()
     return render(request, 'webui/groups/group_form.html', {'form': form})
 @login_required
+@user_passes_test(staff_user_required)
 def group_update(request, pk):
     group = get_object_or_404(deviceGroup, pk=pk)
     if request.method == 'POST':
@@ -56,6 +61,7 @@ def group_update(request, pk):
         form = GroupForm(instance=group)
     return render(request, 'webui/groups/group_form.html', {'form': form})
 @login_required
+@user_passes_test(staff_user_required)
 def group_delete(request, pk):
     group = get_object_or_404(deviceGroup, pk=pk)
     if request.method == 'POST':
@@ -67,6 +73,7 @@ def group_delete(request, pk):
 
 
 @login_required
+@user_passes_test(staff_user_required)
 def create_device_password(request, device_id):
     device = get_object_or_404(Device, id=device_id)
 
@@ -77,6 +84,7 @@ def create_device_password(request, device_id):
             device_password = form.save(commit=False)
             device_password.device = device
             device_password.user = request.user
+            device_password.username=request.user.username
             device_password.password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
             device_password.status = True
             device_password.save()
@@ -90,6 +98,7 @@ def create_device_password(request, device_id):
 from django.http import JsonResponse
 
 @login_required
+@user_passes_test(staff_user_required)
 def get_latest_password(request, device_id):
     
     user=request.user
@@ -112,6 +121,7 @@ def custom_logout_view(request):
 
 
 @login_required
+
 def list_device_passwords(request, device_id):
     device = get_object_or_404(Device, id=device_id)
     passwords = DevicePassword.objects.filter(device=device).order_by('-valid_time')
