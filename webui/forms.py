@@ -1,12 +1,19 @@
 from django import forms
-from .models import deviceGroup,Device
+from .models import deviceGroup,Device,DevicePassword
 from .validators import validate_ip_address
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+
+from django.contrib.auth.forms import PasswordChangeForm
 
 class GroupForm(forms.ModelForm):
+    admins = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(), 
+        widget=forms.CheckboxSelectMultiple,
+        required=False, label='Admins' )
     class Meta:
         model = deviceGroup
-        fields = ['name', 'description', 'status']
+        fields = ['name', 'description','admins', 'status']
         
         
 
@@ -32,17 +39,31 @@ class DeviceForm(forms.ModelForm):
 
 
 
-class CustomUserForm(forms.ModelForm):
+
+class DevicePasswordForm(forms.ModelForm):
     class Meta:
-        model = get_user_model()
-        fields = ['username', 'email']
+        model = DevicePassword
+        fields = ['description', 'valid_time']
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            # 'phone_number': forms.TextInput(attrs={'class': 'form-control'}),
-            # 'user_level': forms.NumberInput(attrs={'class': 'form-control'}),
-            # 'status': forms.NumberInput(attrs={'class': 'form-control'}),
-            # 'admin': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'valid_time': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
         }
+        
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        label="Old Password"
+    )
+    new_password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        label="New Password"
+    )
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        label="Confirm New Password"
+    )
+
+
 
 

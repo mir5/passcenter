@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import  deviceGroup, GroupAccess, Device, DevicePassword, UserActivity
+from .models import  deviceGroup,  Device, DevicePassword, UserActivity
 
 @admin.register(Device)
 class DeviceAdmin(admin.ModelAdmin):
@@ -12,6 +12,6 @@ class DeviceAdmin(admin.ModelAdmin):
 
 
 admin.site.register(deviceGroup)
-admin.site.register(GroupAccess)
+
 admin.site.register(DevicePassword)
 admin.site.register(UserActivity)

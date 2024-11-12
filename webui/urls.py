@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
-from . import device_views,user_views
+from . import device_views
+from .views import create_device_password,get_latest_password,custom_logout_view,list_device_passwords,change_password
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -18,19 +19,19 @@ urlpatterns = [
     path('devices/', device_views.device_list, name='device_list'), path('devices/new/', device_views.device_create, name='device_create'),
     path('devices/<int:pk>/edit/', device_views.device_update, name='device_update'),
     path('devices/<int:pk>/delete/', device_views.device_delete, name='device_delete'),
+    path('create-device-password/<int:device_id>/', create_device_password, name='create_device_password'),
+    path('get-latest-password/<int:device_id>/', get_latest_password, name='get_latest_password'),
+    path('list-device-passwords/<int:device_id>/', list_device_passwords, name='list_device_passwords'),
     
     
     #auth system
     path('login/', auth_views.LoginView.as_view(template_name='webui/login.html'), name='login'), 
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout/', custom_logout_view, name='custom_logout'),
+    path('change-password/', change_password, name='change_password'), 
     
     
-    #user managment
+ 
 
-    path('create-user/', user_views.create_user, name='create_user'),
-    path('delete-user/<int:user_id>/', user_views.delete_user, name='delete_user'),
-    path('disable-user/<int:user_id>/', user_views.disable_user, name='disable_user'),
-    path('modify-password/<int:user_id>/', user_views.modify_password, name='modify_password'),
     # Other URL patterns...
 
 
