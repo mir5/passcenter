@@ -102,4 +102,15 @@ Follow these steps to set up the project on your server:
    
 ### Usage 
 Navigate to http://yourserverip/admin and log in with the superuser credentials.
- 
+
+
+ ## First Release
+
+This application represents the first release of My Pass Application. It has been designed to simplify the management of usernames and passwords across your server farm. We are excited to bring you this tool and hope it meets your needs for efficient and secure password management.
+
+If you have any feature requests, need support for deployment, or require assistance with debugging, please do not hesitate to reach out. Your feedback is incredibly valuable to us as we continue to improve and enhance the application.
+
+For support, please send your requests to: **iman.mir@gmail.com**
+
+We look forward to hearing from you!
+
