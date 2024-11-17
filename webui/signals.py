@@ -12,3 +12,5 @@ def apply_device_password(sender, instance, created, **kwargs):
             ssh_apply_device_password(device.ip, device.port, device.remote_user, device.remote_password, instance.username, instance.password,instance.valid_time)
             instance.applytodevice = True
             instance.save()
+
+

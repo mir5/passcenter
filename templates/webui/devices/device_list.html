@@ -5,25 +5,32 @@
 {% block content %}
     <h1>Devices</h1>
     <a class="btn btn-primary mb-3" href="{% url 'device_create' %}">Create New Device</a>
+    <button class="btn btn-secondary mb-3" id="check-ssh-btn">Check SSH Connectivity</button>
+    <button class="btn btn-secondary mb-3" id="change-password-btn">Change Password</button>
+    
     <table class="table table-striped">
         <thead>
             <tr>
+                <th><input type="checkbox" id="select-all"></th>
                 <th>Group</th>
                 <th>Name</th>
                 <th>IP</th>
                 <th>Domain Name</th>
                 <th>Status</th>
+                <th>SSH Status</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for device in devices %}
                 <tr>
+                    <td><input type="checkbox" class="device-checkbox" data-device-id="{{ device.id }}"></td>
                     <td>{{ device.group.name }}</td>
                     <td>{{ device.name }}</td>
                     <td>{{ device.ip }}</td>
                     <td>{{ device.domain_name }}</td>
                     <td>{{ device.status|yesno:"Active,Inactive" }}</td>
+                    <td id="ssh-status-{{ device.id }}">Pending</td>
                     <td>
                         <a class="btn btn-warning btn-sm" href="{% url 'device_update' device.pk %}">Edit</a>
                         <a class="btn btn-danger btn-sm" href="{% url 'device_delete' device.pk %}">Delete</a>
@@ -32,4 +39,89 @@
             {% endfor %}
         </tbody>
     </table>
+
+    <script>
+        document.getElementById('select-all').addEventListener('change', function() {
+            var checkboxes = document.querySelectorAll('.device-checkbox');
+            for (var checkbox of checkboxes) {
+                checkbox.checked = this.checked;
+            }
+        });
+
+        document.getElementById('check-ssh-btn').addEventListener('click', function() {
+            var selectedDevices = [];
+            var checkboxes = document.querySelectorAll('.device-checkbox:checked');
+            for (var checkbox of checkboxes) {
+                selectedDevices.push(checkbox.getAttribute('data-device-id'));
+            }
+
+            if (selectedDevices.length > 0) {
+                // Show loading message
+                document.getElementById('check-ssh-btn').innerText = 'Checking...';
+
+                fetch("{% url 'check_ssh_connectivity' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ device_ids: selectedDevices })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    for (var device_id in data) {
+                        var status = data[device_id];
+                        document.getElementById('ssh-status-' + device_id).innerText = status;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    // Restore button text
+                    document.getElementById('check-ssh-btn').innerText = 'Check SSH Connectivity';
+                });
+            } else {
+                alert('Please select at least one device.');
+            }
+        });
+
+        document.getElementById('change-password-btn').addEventListener('click', function() {
+            var selectedDevices = [];
+            var checkboxes = document.querySelectorAll('.device-checkbox:checked');
+            for (var checkbox of checkboxes) {
+                selectedDevices.push(checkbox.getAttribute('data-device-id'));
+            }
+
+            if (selectedDevices.length > 0) {
+                // Show loading message
+                document.getElementById('change-password-btn').innerText = 'Changing...';
+
+                fetch("{% url 'change_device_password' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ device_ids: selectedDevices })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    for (var device_id in data) {
+                        var status = data[device_id];
+                        document.getElementById('ssh-status-' + device_id).innerText = status;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    // Restore button text
+                    document.getElementById('change-password-btn').innerText = 'Change Password';
+                });
+            } else {
+                alert('Please select at least one device.');
+            }
+        });
+    </script>
 {% endblock %}

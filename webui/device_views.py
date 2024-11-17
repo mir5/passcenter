@@ -27,8 +27,7 @@ def device_update(request, pk):
     device = get_object_or_404(Device, pk=pk)
   
     if request.method == 'POST':
-        form = DeviceForm(request.POST, instance=device)
-        
+        form = DeviceForm(request.POST, instance=device)        
         if form.is_valid():
             form.save()
             return redirect('device_list')

@@ -1,0 +1,16 @@
+{% extends 'webui/base.html' %}
+
+{% block title %}Home Page{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Welcome to Our Application</h1>
+    <p>This is the homepage of our application. Here, you can:</p>
+    <ul>
+        <li><a href="{% url 'group_list' %}">View Device Groups</a></li>
+        <li><a href="{% url 'device_list' %}">View All Devices</a></li>
+        <li><a href="{% url 'homepage' %}">Get Help</a></li>
+    </ul>
+</div>
+{% endblock %}
+

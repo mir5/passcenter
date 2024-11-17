@@ -9,6 +9,8 @@ from django.contrib.auth import update_session_auth_hash
 from .forms import CustomPasswordChangeForm
 import random
 import string
+from django.http import JsonResponse
+import json
 
 def staff_user_required(user):
     return user.is_authenticated and user.is_staff
@@ -73,18 +75,19 @@ def group_delete(request, pk):
 
 
 @login_required
-@user_passes_test(staff_user_required)
 def create_device_password(request, device_id):
     device = get_object_or_404(Device, id=device_id)
 
     if request.method == 'POST':
         form = DevicePasswordForm(request.POST)
         if form.is_valid():
-            DevicePassword.objects.filter(device=device).update(status=False)
+            # Update the DevicePassword instances for the current user and device
+            DevicePassword.objects.filter(device=device, user=request.user).update(status=False)
+
             device_password = form.save(commit=False)
             device_password.device = device
             device_password.user = request.user
-            device_password.username=request.user.username
+            device_password.username = request.user.username
             device_password.password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
             device_password.status = True
             device_password.save()
@@ -98,7 +101,7 @@ def create_device_password(request, device_id):
 from django.http import JsonResponse
 
 @login_required
-@user_passes_test(staff_user_required)
+
 def get_latest_password(request, device_id):
     
     user=request.user
@@ -120,17 +123,25 @@ def custom_logout_view(request):
 
 
 
-@login_required
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Device, DevicePassword
+from django.contrib.auth.models import User
 
+@login_required
+@user_passes_test(staff_user_required)
 def list_device_passwords(request, device_id):
     device = get_object_or_404(Device, id=device_id)
     passwords = DevicePassword.objects.filter(device=device).order_by('-valid_time')
+    
+    
 
     return render(request, 'webui/devices/list_device_passwords.html', {
         'device': device,
-        'passwords': passwords
+        'passwords': passwords,
+       
     })
-    
+
 
 
 @login_required
@@ -148,3 +159,88 @@ def change_password(request):
 
 
 
+import paramiko
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+def check_ssh_connectivity(device):
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        client.connect(device.ip, port=device.port, username=device.remote_user, password=device.remote_password)
+        client.close()
+        return "OK"
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+@csrf_exempt
+@login_required
+@user_passes_test(staff_user_required)
+def check_ssh_connectivity_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        device_ids = data.get('device_ids', [])
+        response_data = {}
+
+        for device_id in device_ids:
+            device = get_object_or_404(Device, id=device_id)
+            response_data[device_id] = check_ssh_connectivity(device)
+        
+        return JsonResponse(response_data)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+import json
+import paramiko
+import random
+import string
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import get_object_or_404
+from .models import Device
+
+def generate_random_password(length=20): 
+    characters = string.ascii_letters + string.digits # Only alphabets and numbers 
+    return ''.join(random.choice(characters) for _ in range(length))
+
+def change_device_password(device, new_password):
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    try:
+        client.connect(device.ip, port=device.port, username=device.remote_user, password=device.remote_password)
+        # Use 'sudo passwd' command without password prompt
+        command = f'echo -e "{new_password}\\n{new_password}" | sudo /usr/bin/passwd {device.remote_user}'
+        print(command)
+        stdin, stdout, stderr = client.exec_command(command)
+        stdout.channel.recv_exit_status()  # Ensure the command completes
+        client.close()
+        return "OK"
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+@csrf_exempt
+@login_required
+@user_passes_test(staff_user_required)
+def change_device_password_view(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            device_ids = data.get('device_ids', [])
+            response_data = {}
+
+            for device_id in device_ids:
+                device = get_object_or_404(Device, id=device_id)
+                new_password = generate_random_password()
+                ssh_status = change_device_password(device, new_password)
+
+                if ssh_status == "OK":
+                    device.remote_password = new_password
+                    device.save()
+                response_data[device_id] = ssh_status
+
+            return JsonResponse(response_data)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
