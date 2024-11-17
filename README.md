@@ -1,0 +1,46 @@
+# My Pass Application
+
+## Introduction
+
+This application is developed to manage usernames and passwords in your server farm. It allows you to create server groups and set permissions for users to access these groups. You can define devices within each server group, and for each device, you need to create a username and password with root permission.
+
+On the home page, when a user wants to access a server, they can send a password request and set a validation time for this request. The My Pass application will connect to the device and create a user with a randomly generated password.
+
+
+## Features
+
+- **Server Group Management**: Create and manage server groups.
+- **Permission Settings**: Assign permissions to users for accessing server groups.
+- **Device Management**: Define devices within server groups.
+- **User and Password Management**: Create usernames and passwords with root permissions on devices.
+- **Password Requests**: Allow users to request passwords with a set validation time.
+- **Automatic User Creation**: Automatically create users with random passwords on devices.
+
+## Setup Instructions
+
+Follow these steps to set up the project on your server:
+
+### Prerequisites
+
+- Python 3.8 or higher
+- Django 3.2 or higher
+- pip (Python package installer)
+- Git
+
+### Installation
+
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/yourusername/mypass.git
+   cd mypass
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+   pip install -r requirements.txt
+   python manage.py migrate
+   python manage.py createsuperuser
+   python manage.py runserver
+
+   
+### Usage 
+Navigate to http://yourserverip/admin and log in with the superuser credentials.
+ 
