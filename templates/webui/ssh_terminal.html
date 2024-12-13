@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web SSH Console</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
+</head>
+<body>
+    <div id="terminal" style="height: 100vh;"></div>
+    <script>
+        const terminal = new Terminal();
+        const fitAddon = new FitAddon.FitAddon();
+        terminal.loadAddon(fitAddon);
+        terminal.open(document.getElementById('terminal'));
+        fitAddon.fit();
+    
+        const socket = new WebSocket(`ws://${window.location.hostname}:8000/ws/ssh?ip={{ ip }}&port={{ port }}`);
+        terminal.onData(data => socket.send(data));
+        socket.onmessage = event => terminal.write(event.data);
+    </script>
+    
+</body>
+</html>

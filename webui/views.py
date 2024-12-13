@@ -12,6 +12,9 @@ import string
 from django.http import JsonResponse
 import json
 
+from django.contrib.auth.models import User
+
+
 def staff_user_required(user):
     return user.is_authenticated and user.is_staff
 
@@ -123,10 +126,6 @@ def custom_logout_view(request):
 
 
 
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from .models import Device, DevicePassword
-from django.contrib.auth.models import User
 
 @login_required
 @user_passes_test(staff_user_required)
@@ -244,3 +243,15 @@ def change_device_password_view(request):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def ssh_terminal(request, device_id):
+    device = get_object_or_404(Device, id=device_id)
+    context = {
+        'ip': device.ip,
+        'port': device.port,
+    }
+    return render(request, 'webui/ssh_terminal.html', context)

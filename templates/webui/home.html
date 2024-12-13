@@ -3,123 +3,64 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-4">
-    <div class="row">
-        <!-- Left side: Group list -->
-        <div class="col-md-4">
-            <h3>Groups</h3>
-            <ul class="list-group">
-                {% for group in groups %}
-                <li class="list-group-item">
-                    <a href="#" class="group-item" data-group-id="{{ group.id }}">{{ group.name }}</a>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
+<div class="container mt-4">
+    <h1>Welcome to My Pass Application</h1>
+    <p>Manage your server groups and devices efficiently.</p>
 
-        <!-- Right side: Devices table -->
-        <div class="col-md-8">
-            <h3>Devices</h3>
-            <input type="text" id="deviceFilter" class="form-control mb-3" placeholder="Filter by device name">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Group</th>
-                        <th>Name</th>
-                        <th>IP Address</th>
-                        <th>Domain Name</th>
-                        <th>Status</th>
-                        <th>Request</th>
-                        <th>Password </th>
-                        <th> Logs </th>
-                    </tr>
-                </thead>
-                <tbody id="devices-list">
-                    {% for device in devices %}
-                    <tr class="device-item" data-group-id="{{ device.group.id }}">
-                        <td>{{ device.group.name }}</td>
-                        <td>{{ device.name }}</td>
-                        <td>{{ device.ip }}</td>
-                        <td>{{ device.domain_name }}</td>
-                        <td>{{ device.status|yesno:"Active,Inactive" }}</td>
-                        <td>
-                            
-                            <a href="{% url 'create_device_password' device.id %}" class="btn btn-primary btn-sm">password</a>
-                        </td>
-                        <td>
-                            <a class="btn btn-secondary btn-sm show-password-btn" data-device-id="{{ device.id }}">Show </a>
-                        </td>
-                        <td>
-                            <a href="{% url 'list_device_passwords' device.id %}" class="btn btn-info btn-sm">Log </a>
-                         
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="mt-4">
+        <input type="text" id="filterInput" class="form-control" placeholder="Filter devices...">
     </div>
+
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Group</th>
+                <th>Name</th>
+                <th>IP Address</th>
+                <th>Domain Name</th>
+                <th>Status</th>
+                <th>Request</th>
+                <th>Password</th>
+                <th>Logs</th>
+            </tr>
+        </thead>
+        <tbody id="deviceTableBody">
+            {% for device in devices %}
+            <tr class="{% if device.status %}table-success{% endif %}">
+                <td>{{ device.group.name }}</td>
+                <td><a href="{% url 'ssh_terminal' device.id %}" target="_blank">{{ device.name }}</a></td>
+                <td>{{ device.ip }}</td>
+                <td>{{ device.domain_name }}</td>
+                <td>{{ device.status|yesno:"Active,Inactive" }}</td>
+                <td><button class="btn btn-primary">password</button></td>
+                <td><button class="btn btn-secondary">Show</button></td>
+                <td><button class="btn btn-info">Log</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'home' %}" class="btn btn-primary">Back to Home</a>
 </div>
 
-<!-- Password Modal -->
-<div class="modal fade" id="passwordModal" tabindex="-1" role="dialog" aria-labelledby="passwordModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="passwordModalLabel">Device Password</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p id="modal-password-message"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- JavaScript to filter devices based on selected group and name -->
 <script>
-    document.querySelectorAll('.group-item').forEach(item => {
-        item.addEventListener('click', function(event) {
-            event.preventDefault();
+    // Filter table
+    document.getElementById('filterInput').addEventListener('keyup', function() {
+        var filterValue = this.value.toLowerCase();
+        var rows = document.querySelectorAll('#deviceTableBody tr');
 
-            // Remove 'selected' class from all group items
-            document.querySelectorAll('.group-item').forEach(group => {
-                group.parentElement.classList.remove('selected');
-            });
+        rows.forEach(function(row) {
+            var cells = row.getElementsByTagName('td');
+            var showRow = false;
 
-            // Add 'selected' class to the clicked group item
-            this.parentElement.classList.add('selected');
+            for (var i = 0; i < cells.length; i++) {
+                if (cells[i].textContent.toLowerCase().indexOf(filterValue) > -1) {
+                    showRow = true;
+                    break;
+                }
+            }
 
-            const groupId = this.getAttribute('data-group-id');
-            document.querySelectorAll('.device-item').forEach(device => {
-                device.style.display = device.getAttribute('data-group-id') === groupId ? 'table-row' : 'none';
-            });
-        });
-    });
-
-    document.getElementById('deviceFilter').addEventListener('keyup', function() {
-        const filter = this.value.toLowerCase();
-        document.querySelectorAll('.device-item').forEach(device => {
-            const name = device.querySelector('td:nth-child(2)').textContent.toLowerCase();
-            device.style.display = name.includes(filter) ? 'table-row' : 'none';
-        });
-    });
-
-    document.querySelectorAll('.show-password-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const deviceId = this.getAttribute('data-device-id');
-            fetch(`get-latest-password/${deviceId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('modal-password-message').textContent = data.message;
-                    $('#passwordModal').modal('show');
-                })
-                .catch(error => console.error('Error fetching password:', error));
+            row.style.display = showRow ? '' : 'none';
         });
     });
 </script>

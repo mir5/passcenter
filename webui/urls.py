@@ -13,6 +13,7 @@ urlpatterns = [
     path('groups/new/', views.group_create, name='group_create'),
     path('groups/<int:pk>/edit/', views.group_update, name='group_update'),
     path('groups/<int:pk>/delete/', views.group_delete, name='group_delete'),
+    path('ssh_terminal/<int:device_id>/', views.ssh_terminal, name='ssh_terminal'),
     
     
     # device urls
@@ -23,7 +24,7 @@ urlpatterns = [
     path('get-latest-password/<int:device_id>/', get_latest_password, name='get_latest_password'),
     path('list-device-passwords/<int:device_id>/', list_device_passwords, name='list_device_passwords'),
     path('check-ssh-connectivity/', views.check_ssh_connectivity_view, name='check_ssh_connectivity'), 
-    path('change-device-password/', views.change_device_password_view, name='change_device_password'),
+    path('change-device-password/', views.change_device_password_view, name='change_device_password'),  
     
     #auth system
     path('login/', auth_views.LoginView.as_view(template_name='webui/login.html'), name='login'), 

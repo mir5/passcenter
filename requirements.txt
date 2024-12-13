@@ -1,0 +1,4 @@
+Django==4.2.8
+django-crispy-forms==1.14.0
+crispy-bootstrap5==0.7
+paramiko==3.2.0
