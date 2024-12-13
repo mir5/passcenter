@@ -16,12 +16,18 @@ On the home page, when a user wants to access a server, they can send a password
 - **Password Requests**: Allow users to request passwords with a set validation time.
 - **Automatic User Creation**: Automatically create users with random passwords on devices.
 
+# use below guide to run the project in the docker enviroment:
+
+https://pass.imanmir.com/?p=31
+
 
 ![Alt text](docs/readme/homepage.png)
 
 ![Alt text](docs/readme/createdevice.png)
 
 # My Pass Application - Help Guide
+
+
 
 ## Overview
 
